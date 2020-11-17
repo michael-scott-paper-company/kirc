@@ -38,4 +38,6 @@ jobs:
         codeql-runner-linux analyze \
           --github-url https://github.com \
           --repository ${{ github.repository }} \
-          --github-auth ${{ github.token }}
+          --github-auth ${{ github.token }} \
+          --commit ${{ github.sha }} \
+          --ref ${{ github.ref }}
