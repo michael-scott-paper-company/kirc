@@ -22,8 +22,6 @@ jobs:
       with:
         ssh-key: ${{ secrets.GHAS_DEPLOY_KEY }}
         submodules: true
-    - run: git checkout HEAD^2
-      if: ${{ github.event_name == 'pull_request' }}
     - name: Setup CodeQL Runner
       run: |
         wget -q https://github.com/github/codeql-action/releases/download/codeql-bundle-20201106/codeql-runner-linux
