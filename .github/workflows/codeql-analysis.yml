@@ -24,12 +24,20 @@ jobs:
         submodules: true
     - run: git checkout HEAD^2
       if: ${{ github.event_name == 'pull_request' }}
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v1
-      with:
-         languages: ${{ matrix.language }}
-         config-file: ./.github/codeql/config.yml
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v1
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v1
+    - name: Setup CodeQL Runner
+      run: |
+        wget -q https://github.com/github/codeql-action/releases/download/codeql-bundle-20201106/codeql-runner-linux
+        install -o root -g root -m 0755 codeql-runner-linux /usr/local/bin/
+    - name: Execute CodeQL Runner
+      run: |
+        codeql-runner-linux init \
+          --config-file .github/codeql/config.yml \
+          --github-url https://github.com \
+          --repository ${{ github.repository }} \
+          --github-auth ${{ github.token }}
+        source codeql-runner/codeql-env.sh
+        make
+        codeql-runner-linux analyze \
+          --github-url https://github.com \
+          --repository ${{ github.repository }} \
+          --github-auth ${{ github.token }}
