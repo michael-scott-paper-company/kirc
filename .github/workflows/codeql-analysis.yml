@@ -43,8 +43,7 @@ jobs:
           --repository ${{ github.repository }} \
           --github-auth ${{ github.token }} \
           --commit ${{ github.sha }} \
-          --ref ${{ github.ref }} \
-          --tools-dir ${{ runner.temp }}/codeql
+          --ref ${{ github.ref }}
         ${{ runner.temp }}/codeql/codeql bundle \
           --output ${{ runner.temp }}/db.zip \
           codeql-runner/codeql_databases/cpp
