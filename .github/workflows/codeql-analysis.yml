@@ -34,7 +34,8 @@ jobs:
           --config-file .github/codeql/config.yml \
           --github-url https://github.com \
           --repository ${{ github.repository }} \
-          --github-auth ${{ github.token }}
+          --github-auth ${{ github.token }} \
+          --tools-dir ${{ runner.temp }}/codeql
         source codeql-runner/codeql-env.sh
         make
         codeql-runner analyze \
@@ -42,4 +43,13 @@ jobs:
           --repository ${{ github.repository }} \
           --github-auth ${{ github.token }} \
           --commit ${{ github.sha }} \
-          --ref ${{ github.ref }}
+          --ref ${{ github.ref }} \
+          --tools-dir ${{ runner.temp }}/codeql
+        ${{ runner.temp }}/codeql/codeql bundle \
+          --output ${{ runner.temp }}/db.zip \
+          codeql-runner/codeql_databases/cpp
+    - name: Upload CodeQL Database
+      uses: actions/upload-artifact@v2
+      with:
+        name: codeql-database.zip
+        path: $RUNNER_TEMP/db.zip
