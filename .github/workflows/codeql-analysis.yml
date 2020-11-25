@@ -29,29 +29,25 @@ jobs:
         wget -q https://github.com/github/codeql-action/releases/download/codeql-bundle-20201106/codeql-runner-linux
         sudo install -o root -g root -m 0755 codeql-runner-linux /usr/local/bin/codeql-runner
     - name: Execute CodeQL Runner
-      env:
-        GITHUB_REPO: ${{ github.repository }}
-        GITHUB_TOKEN: ${{ github.token }}
-        LANGUAGE: ${{ matrix.language }}
       run: |
         codeql-runner init \
           --config-file .github/codeql/config.yml \
           --github-url "$GITHUB_SERVER_URL" \
-          --repository "$GITHUB_REPO" \
-          --github-auth "$GITHUB_TOKEN" \
+          --repository "${{ github.repository }}" \
+          --github-auth "${{ github.token }}" \
           --tools-dir "$RUNNER_TEMP"
         source codeql-runner/codeql-env.sh
         make
         codeql-runner analyze \
           --github-url "$GITHUB_SERVER_URL" \
-          --repository "$GITHUB_REPO" \
-          --github-auth "$GITHUB_TOKEN" \
+          --repository "${{ github.repository }}" \
+          --github-auth "${{ github.token }}" \
           --commit "$GITHUB_SHA" \
           --ref "$GITHUB_REF"
-        CODEQL_CLI=$(find "$RUNNER_TEMP" -type f -executable -name codeql)
+        CODEQL_CLI="$(find "$RUNNER_TEMP" -type f -executable -name codeql)"
         $CODEQL_CLI database bundle \
           --output "$RUNNER_TEMP/codeql-database.zip" \
-          "codeql-runner/codeql_databases/$LANGUAGE"
+          "codeql-runner/codeql_databases/${{ matrix.language }}"
     - name: Upload CodeQL Database
       uses: actions/upload-artifact@v2
       with:
