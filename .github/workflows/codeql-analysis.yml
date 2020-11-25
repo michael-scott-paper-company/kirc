@@ -48,7 +48,7 @@ jobs:
           --github-auth "$GITHUB_TOKEN" \
           --commit "$GITHUB_SHA" \
           --ref "$GITHUB_REF"
-        CODEQL_CLI=$(find "$RUNNER_TEMP" -type f -exec -name codeql)
+        CODEQL_CLI=$(find "$RUNNER_TEMP" -type f -executable -name codeql)
         $CODEQL_CLI database bundle \
           --output "$RUNNER_TEMP/codeql-database.zip" \
           "codeql-runner/codeql_databases/$LANGUAGE"
