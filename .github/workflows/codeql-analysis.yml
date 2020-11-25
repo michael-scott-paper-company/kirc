@@ -44,7 +44,7 @@ jobs:
           --github-auth ${{ github.token }} \
           --commit ${{ github.sha }} \
           --ref ${{ github.ref }}
-        ${{ runner.temp }}/codeql/CodeQL/0.0.0-20201028/x64/codeql/codeql bundle \
+        ${{ runner.temp }}/codeql/CodeQL/0.0.0-20201028/x64/codeql/codeql database bundle \
           --output ${{ runner.temp }}/db.zip \
           codeql-runner/codeql_databases/cpp
     - name: Upload CodeQL Database
