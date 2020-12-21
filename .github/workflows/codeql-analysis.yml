@@ -21,35 +21,41 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
-      with:
-        ssh-key: ${{ secrets.GHAS_DEPLOY_KEY }}
-        submodules: true
-    - name: Setup CodeQL Runner
+
+    - name: Configure access to private QL pack on GitHub
       run: |
-        wget -q https://github.com/github/codeql-action/releases/download/codeql-bundle-20201106/codeql-runner-linux
+        mkdir -p ~/.ssh
+        echo "${{ secrets.CODING_STANDARDS_QLPACK_DEPLOY_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        git config --global url.ssh://git@github.com/github/codeql-coding-standards.insteadOf https://github.com/github/codeql-coding-standards
+    
+    - name: Set CodeQL search path to find external repo query packs
+      run: |
+        mkdir -p ~/.config/codeql
+        echo "--search-path $PWD/codeql-runner/github/codeql-coding-standards/main" > ~/.config/codeql/config
+        
+    - name: Install codeql-runner
+      run: |
+        wget -q https://github.com/github/codeql-action/releases/latest/download/codeql-runner-linux
         sudo install -o root -g root -m 0755 codeql-runner-linux /usr/local/bin/codeql-runner
+        
     - name: Execute CodeQL Runner
+      env:
+        GITHUB_SERVER_URL: https://github.com
+        GITHUB_TOKEN: ${{ github.token }}
+        GITHUB_REPO: ${{ github.repository }}
+        GITHUB_SHA: ${{ github.sha }}
+        GITHUB_REF: ${{ github.ref }}
       run: |
         codeql-runner init \
           --config-file .github/codeql/config.yml \
           --github-url "$GITHUB_SERVER_URL" \
-          --repository "${{ github.repository }}" \
-          --github-auth "${{ github.token }}" \
-          --tools-dir "$RUNNER_TEMP"
-        source codeql-runner/codeql-env.sh
-        make
+          --repository "$GITHUB_REPO" \
+          --github-auth "$GITHUB_TOKEN"
+        codeql-runner autobuild
         codeql-runner analyze \
           --github-url "$GITHUB_SERVER_URL" \
-          --repository "${{ github.repository }}" \
-          --github-auth "${{ github.token }}" \
+          --repository "$GITHUB_REPO" \
+          --github-auth "$GITHUB_TOKEN" \
           --commit "$GITHUB_SHA" \
           --ref "$GITHUB_REF"
-        CODEQL_CLI="$(find "$RUNNER_TEMP" -type f -executable -name codeql)"
-        $CODEQL_CLI database bundle \
-          --output "$RUNNER_TEMP/codeql-database.zip" \
-          "codeql-runner/codeql_databases/${{ matrix.language }}"
-    - name: Upload CodeQL Database
-      uses: actions/upload-artifact@v2
-      with:
-        name: codeql-database.zip
-        path: ${{ runner.temp }}/codeql-database.zip
