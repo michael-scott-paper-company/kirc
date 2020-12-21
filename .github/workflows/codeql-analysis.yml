@@ -51,7 +51,8 @@ jobs:
           --config-file .github/codeql/config.yml \
           --github-url "$GITHUB_SERVER_URL" \
           --repository "$GITHUB_REPO" \
-          --github-auth "$GITHUB_TOKEN"
+          --github-auth "$GITHUB_TOKEN" \
+          --queries github/codeql-coding-standards/cpp/autosar/src/codeql-suites/autosar-default.qls@main, github/codeql-coding-standards/cpp/cert/src/codeql-suites/cert-default.qls@main
         codeql-runner autobuild
         codeql-runner analyze \
           --github-url "$GITHUB_SERVER_URL" \
